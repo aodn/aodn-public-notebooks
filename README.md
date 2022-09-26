@@ -11,7 +11,7 @@ Add your env to Jupyter Lab:
 python -m ipykernel install --user --name <your_env_name> --display-name "<name_you_want>"
 ```
 
-Below is a list of dependencies used for multi-purpose environment,feel free to remove the packages that may not be required in your scope of usage:
+Below is a list of dependencies used for multi-purpose environment for the time being, feel free to remove the packages that may not be required in your scope of usage:
 
 ```
 setuptools
