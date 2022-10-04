@@ -50,7 +50,7 @@ async def create_dask_cluster():
         cluster = LocalCluster(n_workers=2, memory_limit='20GB', processes=True, 
                             threads_per_worker=5, dashboard_address=f':{dask_port}', ip=dask_address)
         client = Client(address=cluster.scheduler_address)
-        print(f'http://{dask_address}'+':{port}/status'.format(port=client.scheduler_info().get('services').get('dashboard')))
+        print(f"Dask Dashboard: {client.dashboard_link}")
         return cluster, client
 
 
