@@ -20,6 +20,14 @@ CONSISTENT_VARS = {
 }
 
 
+def get_paths(source_path):
+    s3 = s3fs.S3FileSystem(anon=False)
+    glob_result = s3.glob(source_path)
+
+    paths = ["s3://" + path for path in glob_result]
+    return paths
+
+
 def read_clean_data(s3_path: str) -> xr.Dataset:
     s3 = s3fs.S3FileSystem(anon=False)
     data = xr.open_dataset(s3.open(s3_path), engine="h5netcdf")
@@ -30,32 +38,24 @@ def read_clean_data(s3_path: str) -> xr.Dataset:
     return data
 
 
-async def clean_up_cluster(client, cluster):
-    client.close()
-    cluster.close()
-
-
-def get_paths(source_path):
-    s3 = s3fs.S3FileSystem(anon=False)
-    glob_result = s3.glob(source_path)
-
-    paths = ["s3://" + path for path in glob_result]
-    return paths
-
-
 def process_one_file(arguments):
     path, store_path, create = arguments
 
     print(f"Working on {path}")
 
-    data = read_clean_data(path)
-    data = data.chunk({"time": 1, "lon": 500, "lat": 500})
-    if create:
-        data.to_zarr(store_path, mode="w", consolidated=True)
-    else:
-        data.to_zarr(store_path, mode="a", consolidated=True, append_dim="time")
+    try:
+        data = read_clean_data(path)
+        data = data.chunk({"time": 1, "lon": 500, "lat": 500})
+        if create:
+            data.to_zarr(store_path, mode="w", consolidated=True)
+        else:
+            data.to_zarr(store_path, mode="a", consolidated=True, append_dim="time")
+    except Exception as e:
+        print(f"Failed {path} with exception {e}")
+        return False
 
     print(f"Finished {path}")
+    return True
 
 
 def main(source_path, store_path):
@@ -66,10 +66,16 @@ def main(source_path, store_path):
     print("Creating template file...")
     process_one_file((path, store_path, True))
 
+    paths = paths[0:13]
+
     # Process each file in the list on a separate thread
     print(f"Processing {len(paths)} files")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        executor.map(process_one_file, [(p, store_path, False) for p in paths])
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        results = executor.map(process_one_file, [(p, store_path, False) for p in paths])
+
+    failed = not all(results)
+    if failed:
+        print("Failed to write all files...")
 
 
 if __name__ == "__main__":
