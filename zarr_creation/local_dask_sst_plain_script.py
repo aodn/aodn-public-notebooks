@@ -22,6 +22,8 @@ CONSISTENT_VARS = {'time',
                     'sst_dtime'}
                     
 FILES_PER_CHUNK = 10
+SOURCE_PATH = 's3://imos-data/IMOS/SRS/SST/ghrsst/L3S-1d/day/<year or */*.nc'
+STORE_PATH = f's3://<your-bucket>'
 
 
 def chunks(lst, n):
@@ -66,9 +68,9 @@ def get_essentials(source_path, store_path):
     return store, all_chunked_paths
 
 
-async def main(source_path, store_path):
+async def main():
 
-    store, all_chunked_paths = get_essentials(source_path, store_path)
+    store, all_chunked_paths = get_essentials(SOURCE_PATH, STORE_PATH)
     cluster, client = await create_dask_cluster()
 
     start_time = time.time()
@@ -97,6 +99,4 @@ async def main(source_path, store_path):
 
 
 if __name__ == '__main__':
-    source_path = 's3://imos-data/IMOS/SRS/SST/ghrsst/L3S-1d/day/<year or */*.nc'
-    store_path = f's3://<your-bucket>'
-    asyncio.run(main(source_path, store_path))
+    asyncio.run(main())
