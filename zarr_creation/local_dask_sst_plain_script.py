@@ -1,18 +1,11 @@
 import xarray as xr
-import os
-import glob
-import numpy as np
-import pandas as pd
 from tqdm import tqdm
-from time import sleep
 import time
-import io
 import s3fs
 import getpass
 import dask
 from dask.distributed import Client, LocalCluster
 import asyncio
-import subprocess
 
 
 CONSISTENT_VARS = {'time',
