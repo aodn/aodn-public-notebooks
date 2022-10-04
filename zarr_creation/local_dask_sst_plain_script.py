@@ -24,6 +24,7 @@ CONSISTENT_VARS = {'time',
 FILES_PER_CHUNK = 10
 SOURCE_PATH = 's3://imos-data/IMOS/SRS/SST/ghrsst/L3S-1d/day/<year or */*.nc'
 STORE_PATH = f's3://<your-bucket>'
+CHUNK_SHAPE = 1000
 
 
 def chunks(lst, n):
@@ -82,7 +83,7 @@ async def main():
             futures.append(client.submit(read_dataset_inmemory, path, retries=10))
         zarrs = client.gather(futures)
         ds = xr.concat(zarrs, dim='time', coords='minimal',compat='override',combine_attrs='override', fill_value='')
-        chunked = ds.chunk(chunks=1000)  # TODO: new chunking strategy?
+        chunked = ds.chunk(chunks=CHUNK_SHAPE)  # TODO: new chunking strategy?
         for var in chunked.data_vars:
             chunked[var].encoding = {}
         if overwrite:
