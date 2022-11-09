@@ -3,7 +3,7 @@
 To run the notebooks, you will need to install required dependencies `pip install -r requirements.txt`, it's recommended to use virual Python environment tools such as `Conda`.
 
 ```bash
-conda install -n <your_env_name> python=<version> ipython --yes
+conda create -n <your_env_name> python=<version> ipython --yes
 ```
 Add your env to Jupyter Lab:
 
