@@ -61,3 +61,33 @@ def pivot_variables(df: pd.DataFrame, var_set: set) -> pd.DataFrame:
     files_vars = pd.DataFrame(files_vars, columns=['i', 'variable']).set_index('i')
 
     return df.drop(columns='variables').join(files_vars)
+
+
+def instrument_type(instrument: str) -> str:
+    """Return a standardised instrument type (make & model)"""
+
+    if not isinstance(instrument, str):
+        return "Unknown"
+    inst_type = instrument.upper()  # use all capitals
+
+    sub_patterns = [
+        (re.compile(r"\[[^]]*\]"), ""),  # remove anything in [] brackets
+        (re.compile(r"\([^)]*\)"), ""),  # remove anything in () brackets
+        (re.compile(r"ADCP"), ""),  # remove the word "ADCP"
+        (re.compile(r"MODEL"), ""),  # remove the word "MODEL"
+        (re.compile(r"RECORDER"), ""),  # remove the word "RECORDER"
+        (re.compile(r"SEA-?BIRD( ELECTRONICS)?"), "SEABIRD"),  # standardise spellig of "SEABIRD"
+        (re.compile(r"WE[TB] ?LABS"), "WETLABS"),  # standardise spellig of "WETLABS"
+        (re.compile(r"-"), " "),  # replace any "-" character with a space
+        (re.compile(r"  +"), " "),  # replace repeated whitespace characters with just one space
+        (re.compile(r" $"), ""),  # remove any trailing whitespace
+        (re.compile(r"(AQUATEC AQUALOGGER) (\d+).*"), r"\1 \2"),
+        (re.compile(r"(NORTEK) ([A-Z]+) ?(\d*).*"), r"\1 \2 \3"),
+        (re.compile(r"(RDI) (\w+)( SENTINEL).*"), r"\1 \2 \3"),
+        (re.compile(r"(SEABIRD SBE) ?(\d+).*"), r"\1\2"),
+        (re.compile(r"TEMPERATURE LOGGER RBR"), "RBR TEMPERATURE LOGGER"),
+    ]
+    for p, s in sub_patterns:
+        inst_type = p.sub(s, inst_type)
+
+    return inst_type
