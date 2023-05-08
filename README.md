@@ -1,5 +1,7 @@
 # aodn-public-notebooks
 
+These Jupyter notebooks are developed by the [AODN](https://imos.org.au/facilities/aodn/) for public use.
+
 To run the notebooks, you will need to install required dependencies `pip install -r requirements.txt`, it's recommended to use virual Python environment tools such as `Conda`.
 
 ```bash
